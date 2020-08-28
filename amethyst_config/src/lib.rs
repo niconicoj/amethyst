@@ -118,14 +118,20 @@ where
     T: for<'a> Deserialize<'a> + Serialize,
 {
     fn load<P: AsRef<Path>>(path: P) -> Result<Self, ConfigError> {
+        use encoding_rs_io::DecodeReaderBytes;
         use std::{fs::File, io::Read};
 
         let path = path.as_ref();
 
         let content = {
-            let mut file = File::open(path)?;
+            let file = File::open(path)?;
+
+            // Transcode bytes to regular UTF-8 encoding.
+            // If encoding can't be detected then the bytes are passed through.
+            let mut decoder = DecodeReaderBytes::new(file);
+
             let mut buffer = Vec::new();
-            file.read_to_end(&mut buffer)?;
+            decoder.read_to_end(&mut buffer)?;
 
             buffer
         };

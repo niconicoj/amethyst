@@ -61,15 +61,22 @@ impl Source for Directory {
     fn load(&self, path: &str) -> Result<Vec<u8>, Error> {
         #[cfg(feature = "profiler")]
         profile_scope!("dir_load_asset");
+        use encoding_rs_io::DecodeReaderBytes;
         use std::io::Read;
 
         let path = self.path(path);
 
         let mut v = Vec::new();
-        let mut file = File::open(&path)
+        let file = File::open(&path)
             .with_context(|_| format_err!("Failed to open file {:?}", path))
             .with_context(|_| error::Error::Source)?;
-        file.read_to_end(&mut v)
+
+        // Transcode bytes to regular UTF-8 encoding.
+        // If encoding can't be detected then the bytes are passed through.
+        let mut decoder = DecodeReaderBytes::new(file);
+
+        decoder
+            .read_to_end(&mut v)
             .with_context(|_| format_err!("Failed to read file {:?}", path))
             .with_context(|_| error::Error::Source)?;
 
