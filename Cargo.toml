@@ -68,6 +68,9 @@ profiler = [
 sdl_controller = [
     "amethyst_input/sdl_controller",
 ]
+gilrs_controller = [
+    "amethyst_input/gilrs_controller",
+]
 json = [
     "amethyst_assets/json"
 ]

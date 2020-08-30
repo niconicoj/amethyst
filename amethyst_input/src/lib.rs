@@ -11,6 +11,8 @@
 
 #[cfg(feature = "sdl_controller")]
 pub use self::sdl_events_system::SdlEventsSystem;
+#[cfg(feature = "gilrs_controller")]
+pub use self::gilrs_events_system::GilrsEventsSystem;
 pub use self::{
     axis::Axis,
     bindings::{BindingError, BindingTypes, Bindings, StringBindings},
@@ -45,6 +47,8 @@ mod util;
 
 #[cfg(feature = "sdl_controller")]
 mod sdl_events_system;
+#[cfg(feature = "gilrs_controller")]
+mod gilrs_events_system;
 
 struct KeyThenCode {
     value: (VirtualKeyCode, u32),
