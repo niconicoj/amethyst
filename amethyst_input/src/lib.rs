@@ -9,10 +9,10 @@
 #![warn(clippy::all)]
 #![allow(clippy::new_without_default)]
 
-#[cfg(feature = "sdl_controller")]
-pub use self::sdl_events_system::SdlEventsSystem;
 #[cfg(feature = "gilrs_controller")]
 pub use self::gilrs_events_system::GilrsEventsSystem;
+#[cfg(feature = "sdl_controller")]
+pub use self::sdl_events_system::SdlEventsSystem;
 pub use self::{
     axis::Axis,
     bindings::{BindingError, BindingTypes, Bindings, StringBindings},
@@ -45,10 +45,10 @@ mod scroll_direction;
 mod system;
 mod util;
 
-#[cfg(feature = "sdl_controller")]
-mod sdl_events_system;
 #[cfg(feature = "gilrs_controller")]
 mod gilrs_events_system;
+#[cfg(feature = "sdl_controller")]
+mod sdl_events_system;
 
 struct KeyThenCode {
     value: (VirtualKeyCode, u32),

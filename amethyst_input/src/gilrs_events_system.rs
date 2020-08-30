@@ -1,13 +1,13 @@
 use std::{
+    collections::{hash_map::DefaultHasher, HashMap},
     fmt,
-    marker::PhantomData, 
-    collections::{HashMap, hash_map::DefaultHasher},
-    hash::{Hash, Hasher}
+    hash::{Hash, Hasher},
+    marker::PhantomData,
 };
 
 use derivative::Derivative;
 use derive_new::new;
-use gilrs::{Gilrs, Button, Axis, Event, EventType, GamepadId};
+use gilrs::{Axis, Button, Event, EventType, GamepadId, Gilrs};
 
 use amethyst_core::{
     ecs::prelude::{System, SystemData, World, Write},
@@ -32,7 +32,9 @@ pub enum GilrsSystemError {
 impl fmt::Display for GilrsSystemError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            GilrsSystemError::ContextInit(ref msg) => write!(f, "Failed to initialize SDL: {}", msg),
+            GilrsSystemError::ContextInit(ref msg) => {
+                write!(f, "Failed to initialize SDL: {}", msg)
+            }
             GilrsSystemError::ControllerSubsystemInit(ref msg) => {
                 write!(f, "Failed to initialize SDL controller subsystem: {}", msg)
             }
@@ -87,15 +89,13 @@ impl<'a, T: BindingTypes> System<'a> for GilrsEventsSystem<T> {
 
 impl<T: BindingTypes> GilrsEventsSystem<T> {
     /// Creates a new instance of this system with the provided controller mappings.
-    pub fn new(
-        world: &mut World,
-    ) -> Result<Self, GilrsSystemError> {
+    pub fn new(world: &mut World) -> Result<Self, GilrsSystemError> {
         let gilrs_handle: Gilrs = Gilrs::new().unwrap();
         GilrsEventsData::<T>::setup(world);
         let mut sys = GilrsEventsSystem {
             gilrs_handle,
             opened_controllers: HashMap::new(),
-            marker: PhantomData
+            marker: PhantomData,
         };
         let (mut handler, mut output) = GilrsEventsData::fetch(world);
         sys.initialize_controllers(&mut handler, &mut output);
@@ -143,12 +143,13 @@ impl<T: BindingTypes> GilrsEventsSystem<T> {
                 }
                 EventType::Disconnected => {
                     if let Some(idx) = self.close_controller(*gamepad_id) {
-                        handler.send_controller_event(&ControllerDisconnected {which: idx}, output);
+                        handler
+                            .send_controller_event(&ControllerDisconnected { which: idx }, output);
                     }
                 }
                 EventType::Connected => {
                     if let Some(idx) = self.open_controller(*gamepad_id) {
-                        handler.send_controller_event(&ControllerConnected {which: idx}, output);
+                        handler.send_controller_event(&ControllerConnected { which: idx }, output);
                     }
                 }
                 _ => {}
@@ -157,7 +158,7 @@ impl<T: BindingTypes> GilrsEventsSystem<T> {
             match *event_type {
                 EventType::Connected => {
                     if let Some(idx) = self.open_controller(*gamepad_id) {
-                        handler.send_controller_event(&ControllerConnected {which: idx}, output);
+                        handler.send_controller_event(&ControllerConnected { which: idx }, output);
                     }
                 }
                 _ => {}
@@ -171,12 +172,12 @@ impl<T: BindingTypes> GilrsEventsSystem<T> {
                 let idx = self.my_hash(which) as u32;
                 self.opened_controllers.insert(which, idx);
                 Some(idx)
-            },
-            None => None
+            }
+            None => None,
         }
     }
 
-    fn close_controller(&mut self, which: GamepadId) ->Option<u32> {
+    fn close_controller(&mut self, which: GamepadId) -> Option<u32> {
         self.opened_controllers.remove(&which)
     }
 
@@ -190,7 +191,7 @@ impl<T: BindingTypes> GilrsEventsSystem<T> {
         for (_id, gamepad) in self.gilrs_handle.gamepads() {
             let idx = self.my_hash(gamepad.id()) as u32;
             self.opened_controllers.insert(gamepad.id(), idx);
-            handler.send_controller_event(&ControllerConnected {which: idx}, output);
+            handler.send_controller_event(&ControllerConnected { which: idx }, output);
         }
     }
 
@@ -222,7 +223,7 @@ impl From<Button> for ControllerButton {
             Button::Select => ControllerButton::Back,
             Button::Start => ControllerButton::Start,
             Button::Mode => ControllerButton::Guide,
-            Button::LeftTrigger2 =>ControllerButton::LeftTrigger, 
+            Button::LeftTrigger2 => ControllerButton::LeftTrigger,
             Button::RightTrigger2 => ControllerButton::RightTrigger,
             _ => ControllerButton::Unknown,
         }
