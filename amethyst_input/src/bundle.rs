@@ -93,6 +93,11 @@ impl<'a, 'b, T: BindingTypes> SystemBundle<'a, 'b> for InputBundle<T> {
                 SdlEventsSystem::<T>::new(world, self.controller_mappings).unwrap(),
             );
         }
+        #[cfg(feature = "gilrs_controller")]
+        {
+            use super::GilrsEventsSystem;
+            builder.add_thread_local(GilrsEventsSystem::<T>::new(world).unwrap());
+        }
         builder.add(
             InputSystemDesc::<T>::new(self.bindings).build(world),
             "input_system",
